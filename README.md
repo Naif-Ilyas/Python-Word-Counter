@@ -1,0 +1,84 @@
+from tkinter import *
+from tkinter import filedialog
+from pypdf import PdfReader
+from tkinter import ttk
+import string
+
+
+def browse_file():
+    filename = filedialog.askopenfilename(
+        title="Select a PDF file",
+        filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
+    )
+    if filename:
+        fn.delete(0, END)  # clear previous text
+        fn.insert(0, filename)  # show selected path
+
+def calculate():
+    
+    # --- User input ---
+    filename = fn.get()
+    search_word = e2.get().lower()
+
+    # --- Read PDF text ---
+    reader = PdfReader(filename)
+    full_text = ""
+
+    for page in reader.pages:
+        text = page.extract_text()
+        if text:
+            full_text += text.lower() + " "  # lowercase for matching
+
+# --- Remove punctuation ---
+    for punct in string.punctuation:
+        full_text = full_text.replace(punct, " ")
+
+# --- Count occurrences ---
+    words = full_text.split()
+    count = words.count(search_word)
+
+    r.config(text=f"\nThe word '{search_word}' appears {count} times in {filename}.")
+
+
+
+root = Tk()
+# Set window size: width x height
+root.geometry("500x400")  # 500px wide, 400px tall
+
+# Optional: prevent resizing
+root.resizable(False, False)  # disable resize horizontally and vertically
+
+
+# Title
+w = Label(root, text='Word Counter', font=("Arial", 25))
+w.pack(pady=10)
+
+# --- File selection frame ---
+file_frame = Frame(root)
+file_frame.pack(pady=5, fill="x", padx=10)
+
+Label(file_frame, text='Enter file location').pack(side="left")
+fn = Entry(file_frame, width=40)
+fn.pack(side="left", padx=5)
+bbutton = Button(file_frame, text="Browse", command=browse_file)
+bbutton.pack(side="left", padx=5)
+
+# --- Word entry frame ---
+word_frame = Frame(root)
+word_frame.pack(pady=5, fill="x", padx=10)
+
+Label(word_frame, text='Enter word').pack(side="left")
+e2 = Entry(word_frame, width=20)
+e2.pack(side="left", padx=5)
+
+# --- Calculate button ---
+button = Button(root, text="Calculate Occurrence", command=calculate)
+button.pack(pady=15)
+
+# --- Result label ---
+r = Label(root, text="", wraplength=500, justify="left")
+r.pack(pady=10)
+
+
+
+root.mainloop()
